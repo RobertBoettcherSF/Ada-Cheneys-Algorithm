@@ -69,15 +69,22 @@ package body Cheneys_Algorithm is
       Temp_ID : Space_ID;
    begin
       -- 1. Reset To-Space for the new collection cycle
+      -- All live objects will be copied here, starting from address 1
       State.Spaces(State.To_ID).Free := 1;
 
       -- 2. Traverse and relocate Root Nodes (Initial BFS Queue population)
+      -- Copy all root references to To-Space. This initializes the BFS queue.
+      -- After this, Scan=1 and Free points to the first unallocated position.
       for I in Roots'Range loop
          Roots(I) := Copy_Node (State, Roots(I));
       end loop;
 
       -- 3. BFS Scan Phase
-      -- Cheney's algorithm implicitly forms a BFS queue between 'Scan' and 'Free'
+      -- Cheney's algorithm implicitly forms a BFS queue between 'Scan' and 'Free':
+      --   - Objects at positions [1..Scan-1] have been fully processed
+      --   - Objects at positions [Scan..Free-1] have been copied but not processed
+      --   - Objects at positions [Free..Max_Heap_Size] are free space
+      -- The queue grows as Copy_Node adds new objects, and shrinks as Scan advances.
       while Scan < State.Spaces(State.To_ID).Free loop
          State.Spaces(State.To_ID).Memory(Scan).Ref_1 := 
             Copy_Node (State, State.Spaces(State.To_ID).Memory(Scan).Ref_1);
@@ -89,6 +96,8 @@ package body Cheneys_Algorithm is
       end loop;
 
       -- 4. Swap active Semi-Spaces
+      -- After collection, To-Space becomes the new From-Space (containing all live objects)
+      -- and the old From-Space becomes the new To-Space (ready for next collection)
       Temp_ID       := State.From_ID;
       State.From_ID := State.To_ID;
       State.To_ID   := Temp_ID;
