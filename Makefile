@@ -10,9 +10,9 @@ $(BIN_DIR)/main: src/main.adb
 	mkdir -p $(OBJ_DIR) $(BIN_DIR)
 	$(GNAT) -P cheneys.gpr -o $(BIN_DIR)/main src/main.adb
 
-$(BIN_DIR)/tests: tests.adb
+$(BIN_DIR)/tests: src/tests.adb
 	mkdir -p $(OBJ_DIR) $(BIN_DIR)
-	$(GNAT) -P cheneys.gpr -o $(BIN_DIR)/tests tests.adb
+	$(GNAT) -P cheneys.gpr -o $(BIN_DIR)/tests src/tests.adb
 
 test: $(BIN_DIR)/tests
 	@echo "Running tests..."
